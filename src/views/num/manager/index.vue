@@ -30,27 +30,27 @@
         <el-table-column label="编码" align="center" prop="code"/>
         <el-table-column label="客户过期时间" align="center" prop="expiryDate" width="180">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.expiryDate) }}</span>
+            <span>{{ parseTime(scope.row.expiryDate,'{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="客户剩余天数" align="center" prop="remainingDays"/>
         <el-table-column label="卡片过期时间" align="center" prop="cardExpiryDate" width="180">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.cardExpiryDate) }}</span>
+            <span>{{ parseTime(scope.row.cardExpiryDate,'{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="卡片剩余天数" align="center" prop="cardRemainingDays"/>
         <el-table-column label="激活时间" align="center" prop="entryDate" width="180">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.entryDate) }}</span>
+            <span>{{ parseTime(scope.row.entryDate,'{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="备注" align="center" prop="remark"/>
-        <el-table-column label="创建时间" align="center" prop="gmtCreate" width="180">
+<!--        <el-table-column label="创建时间" align="center" prop="gmtCreate" width="180">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.gmtCreate) }}</span>
           </template>
-        </el-table-column>
+        </el-table-column>-->
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
           <template slot-scope="scope">
             <el-button
@@ -115,6 +115,7 @@
 
 <script>
 import {addNumber, delNumber, getNumber, pageNumber, updateNumber} from "@/api/num/manager";
+import {delType} from "@/api/system/dict/type";
 
 export default {
   name: "Number",
@@ -295,14 +296,20 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const categoryIds = row.id || this.ids;
-      this.$modal.confirm('是否确认删除?').then(function () {
-        return delNumber(categoryIds);
+      let delIds = []
+      if (row.id) {
+        delIds.push(row.id);
+      } else {
+        delIds.push(...this.ids);
+      }
+      this.$modal.confirm('确认删除?').then(function () {
+        return delNumber(delIds);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess('删除成功');
+        this.$modal.msgSuccess("删除成功");
       }).catch(() => {
       });
+
     }
   }
 };
