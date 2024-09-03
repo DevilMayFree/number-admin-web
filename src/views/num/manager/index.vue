@@ -279,28 +279,8 @@ export default {
         }],
       },
       renewRules: {
-        remainingDays: [{
-          required: true,
-          message: '客户有效期不能为空',
-          trigger: 'blur',
-        }, {
-          type: 'number',
-          min: 0,
-          max: 2147483647,
-          message: '客户有效期不能超过int最大值(0——2^31-1)',
-          trigger: 'blur',
-        }],
-        cardRemainingDays: [{
-          required: true,
-          message: '卡片有效期不能为空',
-          trigger: 'blur',
-        }, {
-          type: 'number',
-          min: 0,
-          max: 2147483647,
-          message: '卡片有效期不能超过int最大值(0——2^31-1)',
-          trigger: 'blur',
-        }],
+        remainingDays: [],
+        cardRemainingDays: [],
       }
     };
   },
