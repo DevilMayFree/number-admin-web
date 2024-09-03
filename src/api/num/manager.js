@@ -9,15 +9,6 @@ export function pageNumber(query) {
   })
 }
 
-// 查询号码分页
-export function listNumber(query) {
-  return request({
-    url: '/api/num/manager/list',
-    method: 'post',
-    data: query
-  })
-}
-
 // 查询号码详细
 export function getNumber(NumberId) {
   return request({

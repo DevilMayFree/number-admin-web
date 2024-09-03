@@ -45,7 +45,7 @@
             <span>{{ parseTime(scope.row.entryDate) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="备注" align="left" header-align="center" prop="remark" min-width="150"/>
+        <el-table-column label="备注" align="center" prop="remark"/>
         <el-table-column label="创建时间" align="center" prop="gmtCreate" width="180">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.gmtCreate) }}</span>
@@ -78,7 +78,7 @@
 
       <!-- 添加或修改号码对话框 -->
       <el-dialog title="号码" :visible.sync="open" width="500px" append-to-body>
-        <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form ref="form" :model="form" :rules="rules" label-width="100px">
           <el-form-item label="号码" prop="number">
             <el-input v-model="form.number" placeholder="请输入号码"/>
           </el-form-item>
@@ -89,10 +89,10 @@
             <el-input v-model="form.code" placeholder="请输入编码"/>
           </el-form-item>
           <el-form-item label="客户有效期" prop="remainingDays">
-            <el-input v-model="form.remainingDays" placeholder="请输入客户有效期"/>
+            <el-input v-model.number="form.remainingDays" placeholder="请输入客户有效期"/>
           </el-form-item>
           <el-form-item label="卡片有效期" prop="cardRemainingDays">
-            <el-input v-model="form.cardRemainingDays" placeholder="请输入卡片有效期"/>
+            <el-input v-model.number="form.cardRemainingDays" placeholder="请输入卡片有效期"/>
           </el-form-item>
           <el-form-item label="备注" prop="remark">
             <el-input v-model="form.remark" type="textarea" placeholder="请输入内容"/>
@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import {addNumber, delNumber, getNumber, listNumber, updateNumber} from "@/api/num/manager";
+import {addNumber, delNumber, getNumber, pageNumber, updateNumber} from "@/api/num/manager";
 
 export default {
   name: "Number",
@@ -184,9 +184,9 @@ export default {
           trigger: 'blur',
         }, {
           type: 'number',
-          min: -2147483648,
+          min: 0,
           max: 2147483647,
-          message: '客户有效期不能超过int型的取值范围(-2^31——2^31-1)',
+          message: '客户有效期不能超过int最大值(0——2^31-1)',
           trigger: 'blur',
         }],
         cardRemainingDays: [{
@@ -195,9 +195,9 @@ export default {
           trigger: 'blur',
         }, {
           type: 'number',
-          min: -2147483648,
+          min: 0,
           max: 2147483647,
-          message: '卡片有效期不能超过int型的取值范围(-2^31——2^31-1)',
+          message: '卡片有效期不能超过int最大值(0——2^31-1)',
           trigger: 'blur',
         }],
         remark: [{
@@ -217,7 +217,7 @@ export default {
     /** 查询号码列表 */
     getList() {
       this.loading = true;
-      listNumber(this.queryParams).then(response => {
+      pageNumber(this.queryParams).then(response => {
         this.dataList = response.data.records;
         this.total = Number(response.data.total);
         this.loading = false;
@@ -235,8 +235,8 @@ export default {
         number: null,
         label: null,
         code: null,
-        remainingDays: 0,
-        cardRemainingDays: 0,
+        remainingDays: null,
+        cardRemainingDays: null,
         remark: null
       };
       this.resetForm("form");
