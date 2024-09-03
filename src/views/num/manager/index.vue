@@ -137,7 +137,7 @@
       <el-dialog title="分配团队" :visible.sync="openTeam" width="500px" append-to-body>
         <el-form ref="teamForm" :model="teamForm" :rules="teamRules" label-width="100px">
           <el-form-item label="团队" prop="label">
-            <el-input v-model="form.label" placeholder="请输入团队"/>
+            <el-input v-model="teamForm.label" placeholder="请输入团队"/>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -152,10 +152,10 @@
       <el-dialog title="号码" :visible.sync="openRenew" width="500px" append-to-body>
         <el-form ref="renewForm" :model="renewForm" :rules="renewRules" label-width="100px">
           <el-form-item label="客户有效期" prop="remainingDays">
-            <el-input v-model.number="form.remainingDays" placeholder="请输入客户有效期"/>
+            <el-input v-model.number="renewForm.remainingDays" placeholder="请输入客户有效期"/>
           </el-form-item>
           <el-form-item label="卡片有效期" prop="cardRemainingDays">
-            <el-input v-model.number="form.cardRemainingDays" placeholder="请输入卡片有效期"/>
+            <el-input v-model.number="renewForm.cardRemainingDays" placeholder="请输入卡片有效期"/>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
