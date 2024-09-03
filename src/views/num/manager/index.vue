@@ -1,18 +1,31 @@
 <template>
   <div style="padding:6px;">
     <el-card v-show="showSearch" style="margin-bottom:5px;">
-      <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px" style="margin-bottom:-20px;">
-        <el-form-item label="号码查询" prop="categoryName">
+      <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="100px" style="margin-bottom:-20px;">
+        <el-form-item label="号码查询" prop="keywords">
           <el-input v-model="queryParams.keywords" placeholder="请输入号码" clearable size="small"
+                    @keyup.enter.native="handleQuery"/>
+        </el-form-item>
+        <el-form-item label="客户即将过期" prop="expiryDateNum">
+          <el-input v-model="queryParams.expiryDateNum" placeholder="请输入天数" clearable size="small"
+                    @keyup.enter.native="handleQuery"/>
+        </el-form-item>
+        <el-form-item label="卡片即将过期" prop="cardExpiryDateNum">
+          <el-input v-model="queryParams.cardExpiryDateNum" placeholder="请输入天数" clearable size="small"
                     @keyup.enter.native="handleQuery"/>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
           <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
         </el-form-item>
-        <el-form-item style="float:right;">
+        <el-form-item style="float:left;">
           <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
                      v-hasPermi="['num:manager:add']">新增
+          </el-button>
+        </el-form-item>
+        <el-form-item style="float:right;">
+          <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
+                     v-hasPermi="['num:manager:export']">导出
           </el-button>
         </el-form-item>
       </el-form>
@@ -145,7 +158,9 @@ export default {
           current: 1,
           size: 20
         },
-        keywords: null
+        keywords: null,
+        expiryDateNum: null,
+        cardExpiryDateNum:null
       },
       // 表单参数
       form: {},
@@ -262,6 +277,12 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加号码";
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('api/num/manager/export', {
+        ...this.queryParams
+      }, `export_${new Date().getTime()}.xlsx`)
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
