@@ -46,3 +46,21 @@ export function delNumber(NumberId) {
   })
 }
 
+// 分配团队
+export function updateTeam(data){
+  return request({
+    url: '/api/num/manager/updateTeam',
+    method: 'put',
+    data: data
+  })
+}
+
+// 批量续费
+export function updateRenew(data){
+  return request({
+    url: '/api/num/manager/updateRenew',
+    method: 'put',
+    data: data
+  })
+}
+

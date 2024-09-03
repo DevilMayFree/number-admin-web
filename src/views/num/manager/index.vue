@@ -54,27 +54,27 @@
         <el-table-column label="编码" align="center" prop="code"/>
         <el-table-column label="客户过期时间" align="center" prop="expiryDate" width="180">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.expiryDate,'{y}-{m}-{d}') }}</span>
+            <span>{{ parseTime(scope.row.expiryDate, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="客户剩余天数" align="center" prop="remainingDays"/>
         <el-table-column label="卡片过期时间" align="center" prop="cardExpiryDate" width="180">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.cardExpiryDate,'{y}-{m}-{d}') }}</span>
+            <span>{{ parseTime(scope.row.cardExpiryDate, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="卡片剩余天数" align="center" prop="cardRemainingDays"/>
         <el-table-column label="激活时间" align="center" prop="entryDate" width="180">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.entryDate,'{y}-{m}-{d}') }}</span>
+            <span>{{ parseTime(scope.row.entryDate, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="备注" align="center" prop="remark"/>
-<!--        <el-table-column label="创建时间" align="center" prop="gmtCreate" width="180">
-          <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.gmtCreate) }}</span>
-          </template>
-        </el-table-column>-->
+        <!--        <el-table-column label="创建时间" align="center" prop="gmtCreate" width="180">
+                  <template slot-scope="scope">
+                    <span>{{ parseTime(scope.row.gmtCreate) }}</span>
+                  </template>
+                </el-table-column>-->
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
           <template slot-scope="scope">
             <el-button
@@ -133,12 +133,43 @@
         </div>
       </el-dialog>
 
+      <!-- 分配团队对话框 -->
+      <el-dialog title="分配团队" :visible.sync="openTeam" width="500px" append-to-body>
+        <el-form ref="teamForm" :model="teamForm" :rules="teamRules" label-width="100px">
+          <el-form-item label="团队" prop="label">
+            <el-input v-model="form.label" placeholder="请输入团队"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitTeamForm" v-hasPermi="['num:manager:edit']">
+            确 定
+          </el-button>
+          <el-button @click="teamCancel">取 消</el-button>
+        </div>
+      </el-dialog>
+
+      <!-- 批量续费对话框 -->
+      <el-dialog title="号码" :visible.sync="openRenew" width="500px" append-to-body>
+        <el-form ref="renewForm" :model="renewForm" :rules="renewRules" label-width="100px">
+          <el-form-item label="客户有效期" prop="remainingDays">
+            <el-input v-model.number="form.remainingDays" placeholder="请输入客户有效期"/>
+          </el-form-item>
+          <el-form-item label="卡片有效期" prop="cardRemainingDays">
+            <el-input v-model.number="form.cardRemainingDays" placeholder="请输入卡片有效期"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitRenewForm" v-hasPermi="['num:manager:edit']">确 定
+          </el-button>
+          <el-button @click="renewCancel">取 消</el-button>
+        </div>
+      </el-dialog>
     </el-card>
   </div>
 </template>
 
 <script>
-import {addNumber, delNumber, getNumber, pageNumber, updateNumber} from "@/api/num/manager";
+import {addNumber, delNumber, getNumber, pageNumber, updateNumber, updateRenew, updateTeam} from "@/api/num/manager";
 
 export default {
   name: "Number",
@@ -162,6 +193,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      openTeam: false,
+      openRenew: false,
       // 查询参数
       queryParams: {
         // 分页参数
@@ -171,7 +204,7 @@ export default {
         },
         keywords: null,
         expiryDateNum: null,
-        cardExpiryDateNum:null
+        cardExpiryDateNum: null
       },
       // 表单参数
       form: {},
@@ -233,6 +266,41 @@ export default {
           message: '备注不能输入超过500个字符',
           trigger: 'blur',
         }]
+      },
+      teamForm: {},
+      renewForm: {},
+      teamRules: {
+        label: [{
+          required: false,
+          min: 0,
+          max: 500,
+          message: '团队不能输入超过500个字符',
+          trigger: 'blur',
+        }],
+      },
+      renewRules: {
+        remainingDays: [{
+          required: true,
+          message: '客户有效期不能为空',
+          trigger: 'blur',
+        }, {
+          type: 'number',
+          min: 0,
+          max: 2147483647,
+          message: '客户有效期不能超过int最大值(0——2^31-1)',
+          trigger: 'blur',
+        }],
+        cardRemainingDays: [{
+          required: true,
+          message: '卡片有效期不能为空',
+          trigger: 'blur',
+        }, {
+          type: 'number',
+          min: 0,
+          max: 2147483647,
+          message: '卡片有效期不能超过int最大值(0——2^31-1)',
+          trigger: 'blur',
+        }],
       }
     };
   },
@@ -254,6 +322,14 @@ export default {
       this.open = false;
       this.reset();
     },
+    teamCancel() {
+      this.openTeam = false;
+      this.resetTeam();
+    },
+    renewCancel() {
+      this.openRenew = false;
+      this.resetRenew();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -266,6 +342,21 @@ export default {
         remark: null
       };
       this.resetForm("form");
+    },
+    resetTeam() {
+      this.teamForm = {
+        ids: [],
+        label: null,
+      };
+      this.resetForm("teamForm");
+    },
+    resetRenew() {
+      this.form = {
+        ids: [],
+        remainingDays: null,
+        cardRemainingDays: null,
+      };
+      this.resetForm("renewForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -295,11 +386,21 @@ export default {
         ...this.queryParams
       }, `export_${new Date().getTime()}.xlsx`)
     },
-    handleTeam(){
-      console.log('handleTeam')
+    handleTeam() {
+      if (this.ids != null && this.ids.length > 0) {
+        this.resetTeam();
+        this.openTeam = true;
+      } else {
+        this.$modal.msgWarning("至少选择一个号码");
+      }
     },
-    handleRenew(){
-      console.log('handleRenew')
+    handleRenew() {
+      if (this.ids != null && this.ids.length > 0) {
+        this.resetRenew();
+        this.openRenew = true;
+      } else {
+        this.$modal.msgWarning("至少选择一个号码");
+      }
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -332,6 +433,30 @@ export default {
           }
         }
       });
+    },
+    submitTeamForm() {
+      this.$refs["teamForm"].validate(valid => {
+        if (valid) {
+          this.teamForm.ids = this.ids;
+          updateTeam(this.teamForm).then(response => {
+            this.$modal.msgSuccess("分配团队成功");
+            this.openTeam = false;
+            this.getList();
+          });
+        }
+      })
+    },
+    submitRenewForm() {
+      this.$refs["renewForm"].validate(valid => {
+        if (valid) {
+          this.renewForm.ids = this.ids;
+          updateRenew(this.renewForm).then(response => {
+            this.$modal.msgSuccess("批量续费成功");
+            this.openRenew = false;
+            this.getList();
+          });
+        }
+      })
     },
     /** 删除按钮操作 */
     handleDelete(row) {
