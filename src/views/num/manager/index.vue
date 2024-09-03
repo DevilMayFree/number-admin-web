@@ -115,7 +115,6 @@
 
 <script>
 import {addNumber, delNumber, getNumber, pageNumber, updateNumber} from "@/api/num/manager";
-import {delType} from "@/api/system/dict/type";
 
 export default {
   name: "Number",
@@ -270,6 +269,8 @@ export default {
       const numberId = row.id || this.ids
       getNumber(numberId).then(response => {
         this.form = response.data;
+        this.form.remainingDays = Number(this.form.remainingDays)
+        this.form.cardRemainingDays = Number(this.form.cardRemainingDays)
         this.open = true;
         this.title = "修改号码";
       });
