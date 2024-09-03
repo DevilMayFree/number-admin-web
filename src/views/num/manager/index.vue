@@ -28,11 +28,22 @@
                      v-hasPermi="['num:manager:export']">导出
           </el-button>
         </el-form-item>
+
+        <el-form-item style="float:right;">
+          <el-button type="info" plain icon="el-icon-brush" size="mini" @click="handleRenew">批量续费
+          </el-button>
+        </el-form-item>
+
+        <el-form-item style="float:right;">
+          <el-button type="primary" plain icon="el-icon-collection" size="mini" @click="handleTeam">分配团队
+          </el-button>
+        </el-form-item>
       </el-form>
     </el-card>
 
     <el-card style="padding-bottom:100px;">
       <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange" border>
+        <el-table-column type="selection" width="55" align="center"/>
         <el-table-column label="序号" type="index" width="50" align="center">
           <template slot-scope="scope">
             <span>{{ (queryParams.pageQuery.current - 1) * queryParams.pageQuery.size + scope.$index + 1 }}</span>
@@ -283,6 +294,12 @@ export default {
       this.download('api/num/manager/export', {
         ...this.queryParams
       }, `export_${new Date().getTime()}.xlsx`)
+    },
+    handleTeam(){
+      console.log('handleTeam')
+    },
+    handleRenew(){
+      console.log('handleRenew')
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
