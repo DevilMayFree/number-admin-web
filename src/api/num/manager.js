@@ -64,3 +64,11 @@ export function updateRenew(data){
   })
 }
 
+// 批量录入
+export function addBatch(data){
+  return request({
+    url: '/api/num/manager/addBatch',
+    method: 'post',
+    data: data
+  })
+}

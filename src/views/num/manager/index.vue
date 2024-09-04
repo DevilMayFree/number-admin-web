@@ -149,7 +149,7 @@
       </el-dialog>
 
       <!-- 批量续费对话框 -->
-      <el-dialog title="号码" :visible.sync="openRenew" width="500px" append-to-body>
+      <el-dialog title="批量续费" :visible.sync="openRenew" width="500px" append-to-body>
         <el-form ref="renewForm" :model="renewForm" :rules="renewRules" label-width="100px">
           <el-form-item label="客户有效期" prop="remainingDays">
             <el-input v-model.number="renewForm.remainingDays" placeholder="请输入客户有效期"/>
@@ -164,6 +164,26 @@
           <el-button @click="renewCancel">取 消</el-button>
         </div>
       </el-dialog>
+
+      <!-- 批量录入对话框 -->
+      <el-dialog title="批量录入" :visible.sync="openAddBatch" width="500px" append-to-body>
+        <el-form ref="addBatchForm" :model="addBatchForm" label-width="100px">
+          <el-form-item label="第一个编码" prop="firstCode">
+            <el-input v-model.number="addBatchForm.firstCode"
+                      placeholder="请输入第一个编码,例如这批次从E213开始，填E213"/>
+          </el-form-item>
+          <el-form-item label="号码列表" prop="numList">
+            <el-input v-model.number="addBatchForm.numText" placeholder="请输入号码列表,一行一个号码,回车换行"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitAddBatchForm" v-hasPermi="['num:manager:edit']">确 定
+          </el-button>
+          <el-button @click="addBatchCancel">取 消</el-button>
+        </div>
+      </el-dialog>
+
+
     </el-card>
   </div>
 </template>
@@ -195,6 +215,7 @@ export default {
       open: false,
       openTeam: false,
       openRenew: false,
+      openAddBatch: false,
       // 查询参数
       queryParams: {
         // 分页参数
@@ -269,6 +290,7 @@ export default {
       },
       teamForm: {},
       renewForm: {},
+      addBatchForm: {},
       teamRules: {
         label: [{
           required: false,
@@ -310,6 +332,10 @@ export default {
       this.openRenew = false;
       this.resetRenew();
     },
+    addBatchCancel() {
+      this.openAddBatch = false;
+      this.resetAddBatch();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -331,12 +357,19 @@ export default {
       this.resetForm("teamForm");
     },
     resetRenew() {
-      this.form = {
+      this.renewForm = {
         ids: [],
         remainingDays: null,
         cardRemainingDays: null,
       };
       this.resetForm("renewForm");
+    },
+    resetAddBatch() {
+      this.addBatchForm = {
+        firstCode: null,
+        numText: null
+      };
+      this.resetForm("addBatchForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -437,6 +470,33 @@ export default {
           });
         }
       })
+    },
+    submitAddBatchForm() {
+      this.$refs["addBatchForm"].validate(valid => {
+        if (valid) {
+          const firstCode = this.addBatchForm.firstCode;
+          const text = this.addBatchForm.numText;
+          const numList = this.textareaArr(text);
+
+          updateRenew({
+            firstCode: firstCode,
+            numList: numList
+          }).then(response => {
+            if (response && response.code == '0') {
+              this.$modal.msgSuccess("批量录入成功");
+              this.openAddBatch = false;
+              this.getList();
+            }
+          });
+        }
+      })
+    },
+    textareaArr(str) {
+      if (typeof str == "string") {
+        return str.split(/[(\r\n)\r\n]+/);
+      } else {
+        return []
+      }
     },
     /** 删除按钮操作 */
     handleDelete(row) {
