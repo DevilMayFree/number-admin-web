@@ -24,7 +24,7 @@
 
             <el-card style="padding-bottom:100px;">
               <div class="grid-content content-card">
-                <span style="font-size: 25vw;">{{ showData.label }}</span>
+                <span style="font-size: 25vw;">{{ showData.code }}</span>
               </div>
             </el-card>
           </div>
@@ -50,7 +50,7 @@ export default {
         keywords: null
       },
       showData: {
-        label: null,
+        code: null,
       }
     }
   },
@@ -64,7 +64,7 @@ export default {
     },
     getData() {
       this.showData = {
-        label: null,
+        code: null,
       }
       if (this.queryParams.keywords == null || this.queryParams.keywords === "") {
         return;
