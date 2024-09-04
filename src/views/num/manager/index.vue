@@ -57,7 +57,7 @@
           <template slot-scope="scope">
             <el-link :underline="true" v-clipboard:copy="scope.row.number"
                      v-clipboard:success="clipboardSuccess" style="color:blue">
-              <span> {{scope.row.number}}</span>
+              <span> {{ scope.row.number }}</span>
             </el-link>
           </template>
         </el-table-column>
@@ -125,10 +125,10 @@
             <el-input v-model="form.code" placeholder="请输入编码"/>
           </el-form-item>
           <el-form-item label="客户有效期" prop="remainingDays">
-            <el-input v-model.number="form.remainingDays" placeholder="请输入客户有效期"/>
+            <el-input v-model="form.remainingDays" placeholder="请输入客户有效期"/>
           </el-form-item>
           <el-form-item label="卡片有效期" prop="cardRemainingDays">
-            <el-input v-model.number="form.cardRemainingDays" placeholder="请输入卡片有效期"/>
+            <el-input v-model="form.cardRemainingDays" placeholder="请输入卡片有效期"/>
           </el-form-item>
           <el-form-item label="备注" prop="remark">
             <el-input v-model="form.remark" type="textarea" placeholder="请输入内容"/>
@@ -164,10 +164,10 @@
       <el-dialog title="批量续费" :visible.sync="openRenew" width="500px" append-to-body>
         <el-form ref="renewForm" :model="renewForm" :rules="renewRules" label-width="100px">
           <el-form-item label="客户有效期" prop="remainingDays">
-            <el-input v-model.number="renewForm.remainingDays" placeholder="请输入客户有效期"/>
+            <el-input v-model="renewForm.remainingDays" placeholder="请输入客户有效期"/>
           </el-form-item>
           <el-form-item label="卡片有效期" prop="cardRemainingDays">
-            <el-input v-model.number="renewForm.cardRemainingDays" placeholder="请输入卡片有效期"/>
+            <el-input v-model="renewForm.cardRemainingDays" placeholder="请输入卡片有效期"/>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -280,28 +280,8 @@ export default {
           message: '编码不能少于1个字符和超过64字符',
         },
         ],
-        remainingDays: [{
-          required: true,
-          message: '客户有效期不能为空',
-          trigger: 'blur',
-        }, {
-          type: 'number',
-          min: 0,
-          max: 2147483647,
-          message: '客户有效期不能超过int最大值(0——2^31-1)',
-          trigger: 'blur',
-        }],
-        cardRemainingDays: [{
-          required: true,
-          message: '卡片有效期不能为空',
-          trigger: 'blur',
-        }, {
-          type: 'number',
-          min: 0,
-          max: 2147483647,
-          message: '卡片有效期不能超过int最大值(0——2^31-1)',
-          trigger: 'blur',
-        }],
+        remainingDays: [],
+        cardRemainingDays: [],
         remark: [{
           required: false,
           min: 0,
@@ -409,7 +389,7 @@ export default {
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
-    clipboardSuccess(){
+    clipboardSuccess() {
       this.$modal.msgSuccess("复制成功");
     },
     /** 新增按钮操作 */
@@ -450,8 +430,12 @@ export default {
       const numberId = row.id || this.ids
       getNumber(numberId).then(response => {
         this.form = response.data;
-        this.form.remainingDays = Number(this.form.remainingDays)
-        this.form.cardRemainingDays = Number(this.form.cardRemainingDays)
+        if (this.form.remainingDays == null || this.form.remainingDays == 'null') {
+          this.form.remainingDays = "";
+        }
+        if (this.form.cardRemainingDays == null || this.form.cardRemainingDays == 'null') {
+          this.form.cardRemainingDays = "";
+        }
         this.open = true;
         this.title = "修改号码";
       });
