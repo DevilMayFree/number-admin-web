@@ -53,7 +53,15 @@
             <span>{{ (queryParams.pageQuery.current - 1) * queryParams.pageQuery.size + scope.$index + 1 }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="号码" align="center" prop="number"/>
+        <el-table-column label="号码" align="center" prop="number">
+          <template slot-scope="scope">
+            <el-link :underline="true" v-clipboard:copy="scope.row.number"
+                     v-clipboard:success="clipboardSuccess" style="color:blue">
+              <span> {{scope.row.number}}</span>
+            </el-link>
+          </template>
+        </el-table-column>
+
         <el-table-column label="团队" align="center" prop="label"/>
         <el-table-column label="编码" align="center" prop="code"/>
         <el-table-column label="客户过期时间" align="center" prop="expiryDate" width="180">
@@ -400,6 +408,9 @@ export default {
       this.ids = selection.map(item => item.id)
       this.single = selection.length !== 1
       this.multiple = !selection.length
+    },
+    clipboardSuccess(){
+      this.$modal.msgSuccess("复制成功");
     },
     /** 新增按钮操作 */
     handleAdd() {
