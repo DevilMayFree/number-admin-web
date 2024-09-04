@@ -38,6 +38,10 @@
           <el-button type="primary" plain icon="el-icon-collection" size="mini" @click="handleTeam">分配团队
           </el-button>
         </el-form-item>
+        <el-form-item style="float:right;">
+          <el-button type="primary" plain icon="el-icon-add" size="mini" @click="handleAddBatch">批量新增
+          </el-button>
+        </el-form-item>
       </el-form>
     </el-card>
 
@@ -173,7 +177,8 @@
                       placeholder="请输入第一个编码,例如这批次从E213开始，填E213"/>
           </el-form-item>
           <el-form-item label="号码列表" prop="numList">
-            <el-input v-model.number="addBatchForm.numText" placeholder="请输入号码列表,一行一个号码,回车换行"/>
+            <el-input class="num-list" v-model="addBatchForm.numText" type="textarea"
+                      placeholder="请输入号码列表,一行一个号码,回车换行"/>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -189,7 +194,16 @@
 </template>
 
 <script>
-import {addNumber, delNumber, getNumber, pageNumber, updateNumber, updateRenew, updateTeam} from "@/api/num/manager";
+import {
+  addBatch,
+  addNumber,
+  delNumber,
+  getNumber,
+  pageNumber,
+  updateNumber,
+  updateRenew,
+  updateTeam
+} from "@/api/num/manager";
 
 export default {
   name: "Number",
@@ -407,6 +421,10 @@ export default {
         this.$modal.msgWarning("至少选择一个号码");
       }
     },
+    handleAddBatch() {
+      this.resetAddBatch();
+      this.openAddBatch = true;
+    },
     handleRenew() {
       if (this.ids != null && this.ids.length > 0) {
         this.resetRenew();
@@ -478,7 +496,7 @@ export default {
           const text = this.addBatchForm.numText;
           const numList = this.textareaArr(text);
 
-          updateRenew({
+          addBatch({
             firstCode: firstCode,
             numList: numList
           }).then(response => {
@@ -518,3 +536,10 @@ export default {
   }
 };
 </script>
+<style scoped>
+.num-list {
+  textarea {
+    min-height: 15vw !important;
+  }
+}
+</style>
