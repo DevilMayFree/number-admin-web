@@ -243,7 +243,7 @@ export default {
         // 分页参数
         pageQuery: {
           current: 1,
-          size: 20
+          size: 50
         },
         keywords: null,
         expiryDateNum: null,
