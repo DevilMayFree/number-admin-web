@@ -48,7 +48,7 @@
     <el-card style="padding-bottom:100px;">
       <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange" border>
         <el-table-column type="selection" width="55" align="center"/>
-        <el-table-column label="序号" type="index" width="50" align="center">
+        <el-table-column label="序号" type="index" width="60" align="center">
           <template slot-scope="scope">
             <span>{{ (queryParams.pageQuery.current - 1) * queryParams.pageQuery.size + scope.$index + 1 }}</span>
           </template>
