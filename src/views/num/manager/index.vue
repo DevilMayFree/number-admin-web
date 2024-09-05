@@ -2,8 +2,8 @@
   <div style="padding:6px;">
     <el-card v-show="showSearch" style="margin-bottom:5px;">
       <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="100px" style="margin-bottom:-20px;">
-        <el-form-item label="号码查询" prop="keywords">
-          <el-input v-model="queryParams.keywords" placeholder="请输入号码" clearable size="small"
+        <el-form-item label="查询" prop="keywords">
+          <el-input v-model="queryParams.keywords" placeholder="请输入号码/编码前缀" clearable size="small"
                     @keyup.enter.native="handleQuery"/>
         </el-form-item>
         <el-form-item label="客户即将过期" prop="expiryDateNum">
