@@ -24,7 +24,7 @@
 
             <el-card style="padding-bottom:100px;">
               <div class="grid-content content-card">
-                <span style="font-size: 25vw;">{{ showData.code }}</span>
+                <span style="font-size: 20vw;">{{ showData.code }}</span>
               </div>
             </el-card>
           </div>
