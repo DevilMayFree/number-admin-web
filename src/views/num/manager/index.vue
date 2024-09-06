@@ -48,7 +48,7 @@
     <el-card style="padding-bottom:100px;">
       <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange" border>
         <el-table-column type="selection" width="55" align="center"/>
-        <el-table-column label="序号" type="index" width="60" align="center">
+        <el-table-column label="序号" type="index" width="100" align="center">
           <template slot-scope="scope">
             <span>{{ (queryParams.pageQuery.current - 1) * queryParams.pageQuery.size + scope.$index + 1 }}</span>
           </template>
@@ -64,19 +64,19 @@
 
         <el-table-column label="团队" align="center" prop="label"/>
         <el-table-column label="编码" align="center" prop="code"/>
-        <el-table-column label="客户过期时间" align="center" prop="expiryDate" width="180">
+        <el-table-column label="客户过期时间" align="center" prop="expiryDate" width="130">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.expiryDate, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="客户剩余天数" align="center" prop="remainingDays"/>
-        <el-table-column label="卡片过期时间" align="center" prop="cardExpiryDate" width="180">
+        <el-table-column label="客户剩余天数" align="center" width="100" prop="remainingDays"/>
+        <el-table-column label="卡片过期时间" align="center" prop="cardExpiryDate" width="130">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.cardExpiryDate, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="卡片剩余天数" align="center" prop="cardRemainingDays"/>
-        <el-table-column label="激活时间" align="center" prop="entryDate" width="180">
+        <el-table-column label="卡片剩余天数" align="center" width="100" prop="cardRemainingDays"/>
+        <el-table-column label="激活时间" align="center" prop="entryDate" width="130">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.entryDate, '{y}-{m}-{d}') }}</span>
           </template>
