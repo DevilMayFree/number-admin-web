@@ -13,6 +13,13 @@
           </el-button>
         </el-form-item>
 
+
+        <el-form-item style="float:left;">
+          <el-button type="warning" plain icon="el-icon-star" size="mini" @click="handleTakeLog">领取记录
+          </el-button>
+        </el-form-item>
+
+
       </el-form>
     </el-card>
 
@@ -59,7 +66,8 @@
           <el-button type="success" v-clipboard:copy="takeForm.contentList"
                      v-clipboard:success="clipboardSuccess">一键复制
           </el-button>
-          <el-button type="primary" @click="submitTakeForm" v-hasPermi="['tg:vip:edit']" v-clipboard:copy="takeForm.contentList"
+          <el-button type="primary" @click="submitTakeForm" v-hasPermi="['tg:vip:edit']"
+                     v-clipboard:copy="takeForm.contentList"
                      v-clipboard:success="clipboardSuccess">
             确定领取
           </el-button>
@@ -82,14 +90,43 @@
         </div>
       </el-dialog>
 
+      <!-- 领取记录对话框 -->
+      <el-dialog title="领取记录" :visible.sync="openLogDialog" width="70%" append-to-body>
+        <el-table v-loading="logLoading" :data="logList" border>
+          <el-table-column label="序号" type="index" width="100" align="center">
+            <template slot-scope="scope">
+              <span>{{
+                  (logQueryParams.pageQuery.current - 1) * logQueryParams.pageQuery.size + scope.$index + 1
+                }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="内容" align="center" prop="content">
+            <template slot-scope="scope">
+              <el-link :underline="true" v-clipboard:copy="scope.row.content"
+                       v-clipboard:success="clipboardSuccess" style="color:blue">
+                <span> {{ scope.row.content }}</span>
+              </el-link>
+            </template>
+          </el-table-column>
+          <el-table-column label="领取时间" align="center" prop="takeTime" width="160">
+            <template slot-scope="scope">
+              <span>{{ parseTime(scope.row.takeTime) }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <pagination v-show="logTotal > 0" :total="logTotal" :page.sync="logQueryParams.pageQuery.current"
+                    :limit.sync="logQueryParams.pageQuery.size" @pagination="getLogList"/>
+
+      </el-dialog>
+
+
     </el-card>
   </div>
 </template>
 
 <script>
-import {
-  addBatch, getTakeContent, pageTgVIP, updateTake,
-} from "@/api/tg/vip";
+import {addBatch, getTakeContent, pageTgVIP, pageTgVIPLog, updateTake,} from "@/api/tg/vip";
 
 export default {
   name: "TGVIP",
@@ -97,6 +134,7 @@ export default {
     return {
       // 遮罩层
       loading: true,
+      logLoading: true,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -105,15 +143,25 @@ export default {
       multiple: true,
       // 总条数
       total: 0,
+      logTotal: 0,
       // 表格数据
       dataList: [],
+      logList: [],
       // 弹出层标题
       title: "",
       openAddBatch: false,
       openTake: false,
+      openLogDialog: false,
       labelPosition: "top",
       // 查询参数
       queryParams: {
+        // 分页参数
+        pageQuery: {
+          current: 1,
+          size: 50
+        }
+      },
+      logQueryParams: {
         // 分页参数
         pageQuery: {
           current: 1,
@@ -145,6 +193,7 @@ export default {
   },
   created() {
     this.getList();
+    this.getLogList();
   },
   methods: {
     /** 查询号码列表 */
@@ -154,6 +203,14 @@ export default {
         this.dataList = response.data.records;
         this.total = Number(response.data.total);
         this.loading = false;
+      });
+    },
+    getLogList() {
+      this.logLoading = true;
+      pageTgVIPLog(this.logQueryParams).then(response => {
+        this.logList = response.data.records;
+        this.logTotal = Number(response.data.total);
+        this.logLoading = false;
       });
     },
     // 多选框选中数据
@@ -185,6 +242,10 @@ export default {
       this.resetTake();
       this.openTake = true;
     },
+    handleTakeLog() {
+      this.getLogList();
+      this.openLogDialog = true;
+    },
     addBatchCancel() {
       this.openAddBatch = false;
       this.resetAddBatch();
@@ -196,7 +257,7 @@ export default {
           ids: ids,
           status: 0
         }).then(response => {
-          console.log('cancel res:',response)
+          console.log('cancel res:', response)
           if (response && response.code == '0') {
             this.takeClose();
             this.getList();

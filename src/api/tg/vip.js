@@ -9,8 +9,17 @@ export function pageTgVIP(query) {
   })
 }
 
+// 查询领取记录分页
+export function pageTgVIPLog(query) {
+  return request({
+    url: '/api/tg/vip/log/page',
+    method: 'post',
+    data: query
+  })
+}
+
 // 获取待分配号码
-export function getTakeContent(data){
+export function getTakeContent(data) {
   return request({
     url: '/api/tg/vip/getTakeContent',
     method: 'post',
@@ -19,7 +28,7 @@ export function getTakeContent(data){
 }
 
 // 批量录入
-export function addBatch(data){
+export function addBatch(data) {
   return request({
     url: '/api/tg/vip/addBatch',
     method: 'post',
@@ -28,7 +37,7 @@ export function addBatch(data){
 }
 
 // 更改获取的待分配号码的状态
-export function updateTake(data){
+export function updateTake(data) {
   return request({
     url: '/api/tg/vip/updateTake',
     method: 'post',
