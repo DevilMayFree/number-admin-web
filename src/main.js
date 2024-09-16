@@ -39,6 +39,7 @@ import VueMeta from 'vue-meta'
 import DictData from '@/components/DictData'
 // moment日期库
 import moment from 'moment'
+import clipboard from 'clipboard'
 
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
@@ -51,6 +52,7 @@ Vue.prototype.selectDictLabels = selectDictLabels
 Vue.prototype.download = download
 Vue.prototype.handleTree = handleTree
 Vue.prototype.$moment = moment
+Vue.prototype.$clipboard = clipboard
 
 // 全局组件挂载
 Vue.component('DictTag', DictTag)

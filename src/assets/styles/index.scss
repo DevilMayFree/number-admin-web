@@ -180,3 +180,12 @@ aside {
     margin-bottom: 10px;
   }
 }
+
+.no-copy {
+  user-select: none; /* 禁止文本选择 */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  cursor: default; /* 禁止复制光标 */
+}
+
