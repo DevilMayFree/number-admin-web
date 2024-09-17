@@ -55,7 +55,7 @@
             <el-input v-model.number="takeForm.count" placeholder="请输入领取数量"/>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="handleCount">获取号码</el-button>
+            <el-button type="primary" @click="handleCount">获取会员</el-button>
           </el-form-item>
           <el-form-item label="内容列表" prop="contentList">
             <el-input class="num-list" v-model="takeForm.contentList" type="textarea"
