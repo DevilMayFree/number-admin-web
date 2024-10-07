@@ -113,6 +113,18 @@
               <span>{{ parseTime(scope.row.takeTime) }}</span>
             </template>
           </el-table-column>
+          <el-table-column label="操作" align="center" width="160">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleView(scope.row.content)"
+                v-hasPermi="['tg:vip:edit']"
+              >查看
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
 
         <pagination v-show="logTotal > 0" :total="logTotal" :page.sync="logQueryParams.pageQuery.current"
@@ -120,6 +132,10 @@
 
       </el-dialog>
 
+      <el-dialog title="验证码查看" :visible.sync="openIframeDialog" width="50%" append-to-body>
+        <iframe :src="iframeUrl" frameborder="0" style="width: 100%; height: 400px;">
+        </iframe>
+      </el-dialog>
 
     </el-card>
   </div>
@@ -152,6 +168,7 @@ export default {
       openAddBatch: false,
       openTake: false,
       openLogDialog: false,
+      openIframeDialog: false,
       labelPosition: "top",
       // 查询参数
       queryParams: {
@@ -189,6 +206,7 @@ export default {
           message: '内容不能输入超过500个字符'
         }],
       },
+      iframeUrl:'',
     };
   },
   created() {
@@ -341,6 +359,18 @@ export default {
       } else {
         return []
       }
+    },
+    handleView(content) {
+      const regex = /\+\d+\|/g;
+      this.iframeUrl = '';
+      if (content) {
+        const result = content.replace(regex, '');
+        if (result && result !== '') {
+          this.iframeUrl = result;
+          this.openIframeDialog = true;
+        }
+      }
+      this.$modal.msgWarning("非法url");
     }
   }
 };
