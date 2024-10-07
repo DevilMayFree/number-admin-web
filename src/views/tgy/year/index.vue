@@ -133,7 +133,7 @@
       </el-dialog>
 
       <el-dialog title="验证码查看" :visible.sync="openIframeDialog" width="50%" append-to-body>
-        <iframe :src="iframeUrl" frameborder="0" style="width: 100%; height: 400px;">
+        <iframe :src="iframeUrl" frameborder="0" style="width: 100%; height: 100%;">
         </iframe>
       </el-dialog>
 
