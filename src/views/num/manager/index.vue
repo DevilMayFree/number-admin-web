@@ -449,7 +449,7 @@ export default {
       const newDate = currentDate.add(days, 'days');
 
       // 格式化为所需格式
-      const formattedDate = newDate.format('YYYY MM DD 00:00:00');
+      const formattedDate = newDate.format('YYYY-MM-DD 00:00:00');
       return formattedDate;
     },
     /** 提交按钮 */
