@@ -212,6 +212,7 @@ import {
   updateRenew,
   updateTeam
 } from "@/api/num/manager";
+import moment from "moment";
 
 export default {
   name: "Number",
@@ -440,11 +441,27 @@ export default {
         this.title = "修改号码";
       });
     },
+    addDaysToCurrentDate(days) {
+      // 获取当前日期
+      const currentDate = moment();
+
+      // 增加指定的天数
+      const newDate = currentDate.add(days, 'days');
+
+      // 格式化为所需格式
+      const formattedDate = newDate.format('YYYY MM DD 00:00:00');
+      return formattedDate;
+    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
+            const remainingDays = Number(this.form.remainingDays)
+            const cardRemainingDays = Number(this.form.cardRemainingDays)
+            this.form.expiryDate = this.addDaysToCurrentDate(remainingDays)
+            this.form.cardExpiryDate = this.addDaysToCurrentDate(cardRemainingDays)
+
             updateNumber(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
