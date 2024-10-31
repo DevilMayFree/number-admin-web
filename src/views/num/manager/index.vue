@@ -213,6 +213,8 @@ import {
   updateTeam
 } from "@/api/num/manager";
 import moment from "moment";
+import {deepCopy} from "@/utils/ruoyi";
+import {Notification} from 'element-ui'
 
 export default {
   name: "Number",
@@ -310,9 +312,100 @@ export default {
     };
   },
   created() {
+    this.getNotice();
     this.getList();
   },
   methods: {
+    getNotice() {
+      let queryExpiryDateNum = deepCopy(this.queryParams)
+      queryExpiryDateNum.expiryDateNum = '10';
+
+      let queryCardExpiryDateNum = deepCopy(this.queryParams)
+      queryCardExpiryDateNum.cardExpiryDateNum = '10';
+
+      let totalExpiryDateNum = 0;
+      let totalCardExpiryDateNum = 0;
+
+      const h = this.$createElement;
+      pageNumber(queryExpiryDateNum).then(response => {
+        totalExpiryDateNum = Number(response.data.total);
+
+        pageNumber(queryCardExpiryDateNum).then(response => {
+          totalCardExpiryDateNum = Number(response.data.total);
+
+          const content1 = "客户即将过期:" + totalExpiryDateNum;
+          const content2 = "卡片即将过期:" + totalCardExpiryDateNum;
+
+          Notification.info({
+            title: '过期提醒',
+            message: h(
+              "div",
+              {
+                style: "width: 250px;",
+              },
+              [
+                h("div", [
+                  h("span", null, content1),
+                  h(
+                    "a",
+                    {
+                      style: "color: #409EFF;cursor: pointer;",
+                      on: {
+                        click: this.goToExpiryDate,
+                      },
+                    },
+                    "查看"
+                  ),
+                ]),
+                h("div", [
+                  h("span", null, content2),
+                  h(
+                    "a",
+                    {
+                      style: "color: #409EFF;cursor: pointer;",
+                      on: {
+                        click: this.goToCardExpiryDate,
+                      },
+                    },
+                    "查看"
+                  ),
+                ]),
+                h("div", [
+                  h(
+                    "a",
+                    {
+                      style: "color: #409EFF;cursor: pointer;",
+                      on: {
+                        click: this.goToAllExpiryDate,
+                      },
+                    },
+                    "查看全部即将过期数据"
+                  ),
+                ]),
+              ],
+            ),
+            showClose: true,
+            duration: 0,
+          });
+        });
+      });
+    },
+    goToExpiryDate() {
+      this.resetForm("queryForm");
+      this.queryParams.expiryDateNum = '10';
+      this.getList();
+    },
+    goToCardExpiryDate() {
+      this.resetForm("queryForm");
+      this.queryParams.cardExpiryDateNum = '10';
+      this.getList();
+    },
+    goToAllExpiryDate() {
+      this.resetForm("queryForm");
+      this.queryParams.expiryDateNum = '10';
+      this.queryParams.cardExpiryDateNum = '10';
+      this.getList();
+    },
     /** 查询号码列表 */
     getList() {
       this.loading = true;
