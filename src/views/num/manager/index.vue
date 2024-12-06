@@ -42,6 +42,10 @@
           <el-button type="primary" plain icon="el-icon-add" size="mini" @click="handleAddBatch">批量新增
           </el-button>
         </el-form-item>
+        <el-form-item style="float:right;">
+          <el-button type="primary" plain icon="el-icon-edit" size="mini" @click="handleEditBatch">批量编辑
+          </el-button>
+        </el-form-item>
       </el-form>
     </el-card>
 
@@ -196,6 +200,46 @@
         </div>
       </el-dialog>
 
+      <!-- 批量编辑对话框 -->
+      <el-dialog title="批量编辑" :visible.sync="openEditBatch" width="500px" append-to-body>
+        <el-form ref="editBatchForm" :model="editBatchForm" label-width="100px">
+          <el-form-item label="客户续费天数" prop="remainingDays">
+            <el-input v-model.number="editBatchForm.remainingDays"
+                      placeholder="客户续费天数"/>
+          </el-form-item>
+          <el-form-item label="号码列表" prop="numList">
+            <el-input class="num-list" v-model="editBatchForm.numText" type="textarea"
+                      placeholder="请输入号码列表,一行一个号码,回车换行"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitEditBatchForm" v-hasPermi="['num:manager:edit']">确 定
+          </el-button>
+          <el-button @click="editBatchCancel">取 消</el-button>
+        </div>
+      </el-dialog>
+
+      <!-- 剩余超过15天的客户 对话框 -->
+      <el-dialog title="剩余超过15天" :visible.sync="openOverBatch" width="500px" append-to-body>
+        <el-form ref="overBatchForm" :model="overBatchForm" label-width="100px">
+          <el-form-item label="客户续费天数" prop="remainingDays">
+            <el-input disabled v-model.number="overBatchForm.remainingDays"
+                      placeholder="客户续费天数"/>
+          </el-form-item>
+          <el-form-item label="号码列表" prop="numList">
+            <el-input disabled class="num-list" v-model="overBatchForm.numText" type="textarea"
+                      placeholder="剩余超过15天的号码，一行一个号码"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitOverBatchForm" v-hasPermi="['num:manager:edit']">确定续费
+          </el-button>
+            <el-button v-clipboard:copy="overBatchForm.numText"
+                       v-clipboard:success="overBatchCancelCopy" >取消(复制全部)
+            </el-button>
+        </div>
+      </el-dialog>
+
 
     </el-card>
   </div>
@@ -206,6 +250,7 @@ import {
   addBatch,
   addNumber,
   delNumber,
+  editBatch,
   getNumber,
   pageNumber,
   updateNumber,
@@ -241,6 +286,8 @@ export default {
       openTeam: false,
       openRenew: false,
       openAddBatch: false,
+      openEditBatch: false,
+      openOverBatch: false,
       // 查询参数
       queryParams: {
         // 分页参数
@@ -296,6 +343,8 @@ export default {
       teamForm: {},
       renewForm: {},
       addBatchForm: {},
+      editBatchForm: {},
+      overBatchForm: {},
       teamRules: {
         label: [{
           required: false,
@@ -432,6 +481,18 @@ export default {
       this.openAddBatch = false;
       this.resetAddBatch();
     },
+    editBatchCancel() {
+      this.openEditBatch = false;
+      this.resetEditBatch();
+
+      this.getList();
+    },
+    overBatchCancel() {
+      this.openOverBatch = false;
+      this.resetOverBatch();
+
+      this.editBatchCancel();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -467,6 +528,22 @@ export default {
       };
       this.resetForm("addBatchForm");
     },
+    resetEditBatch() {
+      this.editBatchForm = {
+        checkOverDays: 'true',
+        remainingDays: null,
+        numText: null
+      };
+      this.resetForm("editBatchForm");
+    },
+    resetOverBatch() {
+      this.overBatchForm = {
+        checkOverDays: 'true',
+        remainingDays: null,
+        numText: null
+      };
+      this.resetForm("overBatchForm");
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageQuery.current = 1;
@@ -485,6 +562,10 @@ export default {
     },
     clipboardSuccess() {
       this.$modal.msgSuccess("复制成功");
+    },
+    overBatchCancelCopy(){
+      this.$modal.msgSuccess("复制成功");
+      this.overBatchCancel();
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -509,6 +590,10 @@ export default {
     handleAddBatch() {
       this.resetAddBatch();
       this.openAddBatch = true;
+    },
+    handleEditBatch() {
+      this.resetEditBatch();
+      this.openEditBatch = true;
     },
     handleRenew() {
       if (this.ids != null && this.ids.length > 0) {
@@ -614,12 +699,70 @@ export default {
         }
       })
     },
+    submitEditBatchForm() {
+      this.$refs["editBatchForm"].validate(valid => {
+        if (valid) {
+          const remainingDays = this.editBatchForm.remainingDays;
+          const text = this.editBatchForm.numText;
+          const numList = this.textareaArr(text);
+
+          editBatch({
+            checkOverDays: 'true',
+            remainingDays: remainingDays,
+            numList: numList
+          }).then(response => {
+            if (response && response.code == '0') {
+              console.log('response:', response)
+              const data = response.data;
+              if (data.editStatus == 4) {
+                this.resetOverBatch();
+
+                this.overBatchForm.checkOverDays = 'false';
+                this.overBatchForm.remainingDays = remainingDays;
+                this.overBatchForm.numText = this.joinArray(data.numList);
+
+                this.openOverBatch = true;
+              } else if (data.editStatus == 1) {
+                this.$modal.msgSuccess("批量编辑成功");
+                this.openEditBatch = false;
+                this.getList();
+              }
+            }
+          });
+        }
+      })
+    },
+    submitOverBatchForm() {
+      this.$refs["overBatchForm"].validate(valid => {
+        if (valid) {
+          const remainingDays = this.overBatchForm.remainingDays;
+          const text = this.overBatchForm.numText;
+          const numList = this.textareaArr(text);
+
+          editBatch({
+            checkOverDays: 'false',
+            remainingDays: remainingDays,
+            numList: numList
+          }).then(response => {
+            if (response && response.code == '0') {
+              this.$modal.msgSuccess("批量录入成功");
+              this.openOverBatch = false;
+              this.openEditBatch = false;
+              this.getList();
+            }
+          });
+        }
+      })
+    },
     textareaArr(str) {
       if (typeof str == "string") {
         return str.split(/[(\r\n)\r\n]+/);
       } else {
         return []
       }
+    },
+    joinArray(array) {
+      return array.join('\n');
     },
     /** 删除按钮操作 */
     handleDelete(row) {

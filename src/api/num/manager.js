@@ -72,3 +72,12 @@ export function addBatch(data){
     data: data
   })
 }
+
+// 批量编辑
+export function editBatch(data){
+  return request({
+    url: '/api/num/manager/editBatch',
+    method: 'post',
+    data: data
+  })
+}
