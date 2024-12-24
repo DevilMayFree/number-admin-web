@@ -219,8 +219,8 @@
         </div>
       </el-dialog>
 
-      <!-- 剩余超过15天的客户 对话框 -->
-      <el-dialog title="剩余超过15天" :visible.sync="openOverBatch" width="500px" append-to-body>
+      <!-- 确定续费对话框 -->
+      <el-dialog title="确定续费对话框" :visible.sync="openOverBatch" width="500px" append-to-body>
         <el-form ref="overBatchForm" :model="overBatchForm" label-width="100px">
           <el-form-item label="客户续费天数" prop="remainingDays">
             <el-input disabled v-model.number="overBatchForm.remainingDays"
@@ -228,15 +228,30 @@
           </el-form-item>
           <el-form-item label="号码列表" prop="numList">
             <el-input disabled class="num-list" v-model="overBatchForm.numText" type="textarea"
-                      placeholder="剩余超过15天的号码，一行一个号码"/>
+                      placeholder="待确认号码，一行一个号码"/>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="submitOverBatchForm" v-hasPermi="['num:manager:edit']">确定续费
           </el-button>
-            <el-button v-clipboard:copy="overBatchForm.numText"
-                       v-clipboard:success="overBatchCancelCopy" >取消(复制全部)
-            </el-button>
+          <el-button v-clipboard:copy="overBatchForm.numText"
+                     v-clipboard:success="overBatchCancelCopy">取消(复制全部)
+          </el-button>
+        </div>
+      </el-dialog>
+
+      <!--      结果复制框-->
+      <el-dialog title="批量编辑结果" :visible.sync="openOverTips" width="500px" append-to-body>
+        <el-form ref="overBatchForm" :model="overTipsForm" label-width="100px">
+          <el-form-item label="号码列表" prop="numList">
+            <el-input class="num-list" v-model="overTipsForm.numText" type="textarea"
+                      placeholder="一行一个号码"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button v-clipboard:copy="overTipsForm.numText"
+                     v-clipboard:success="overTipsCancelCopy">关闭(复制全部)
+          </el-button>
         </div>
       </el-dialog>
 
@@ -249,7 +264,7 @@
 import {
   addBatch,
   addNumber,
-  delNumber,
+  delNumber, doEditBatch,
   editBatch,
   getNumber,
   pageNumber,
@@ -288,6 +303,7 @@ export default {
       openAddBatch: false,
       openEditBatch: false,
       openOverBatch: false,
+      openOverTips: false,
       // 查询参数
       queryParams: {
         // 分页参数
@@ -344,7 +360,9 @@ export default {
       renewForm: {},
       addBatchForm: {},
       editBatchForm: {},
+      editRawList: null,
       overBatchForm: {},
+      overTipsForm: {},
       teamRules: {
         label: [{
           required: false,
@@ -493,6 +511,12 @@ export default {
 
       this.editBatchCancel();
     },
+    overTipsCancel() {
+      this.openOverTips = false;
+      this.resetTipsBatch();
+
+      this.overBatchCancel();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -538,11 +562,16 @@ export default {
     },
     resetOverBatch() {
       this.overBatchForm = {
-        checkOverDays: 'true',
         remainingDays: null,
         numText: null
       };
       this.resetForm("overBatchForm");
+    },
+    resetTipsBatch() {
+      this.overTipsForm = {
+        numText: null
+      };
+      this.resetForm("overTipsForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -563,9 +592,13 @@ export default {
     clipboardSuccess() {
       this.$modal.msgSuccess("复制成功");
     },
-    overBatchCancelCopy(){
+    overBatchCancelCopy() {
       this.$modal.msgSuccess("复制成功");
       this.overBatchCancel();
+    },
+    overTipsCancelCopy() {
+      this.$modal.msgSuccess("复制成功");
+      this.overTipsCancel();
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -705,28 +738,27 @@ export default {
           const remainingDays = this.editBatchForm.remainingDays;
           const text = this.editBatchForm.numText;
           const numList = this.textareaArr(text);
+          this.editRawList = numList;
 
           editBatch({
-            checkOverDays: 'true',
             remainingDays: remainingDays,
             numList: numList
           }).then(response => {
             if (response && response.code == '0') {
               console.log('response:', response)
               const data = response.data;
-              if (data.editStatus == 4) {
+              if (data.editStatus == 5) {
                 this.resetOverBatch();
-
-                this.overBatchForm.checkOverDays = 'false';
                 this.overBatchForm.remainingDays = remainingDays;
-                this.overBatchForm.numText = this.joinArray(data.numList);
+                this.overBatchForm.numText = this.parseResponse(data);
 
                 this.openOverBatch = true;
-              } else if (data.editStatus == 1) {
-                this.$modal.msgSuccess("批量编辑成功");
-                this.openEditBatch = false;
-                this.getList();
               }
+              // else if (data.editStatus == 1) {
+              //   this.$modal.msgSuccess("批量编辑成功");
+              //   this.openEditBatch = false;
+              //   this.getList();
+              // }
             }
           });
         }
@@ -736,18 +768,20 @@ export default {
       this.$refs["overBatchForm"].validate(valid => {
         if (valid) {
           const remainingDays = this.overBatchForm.remainingDays;
-          const text = this.overBatchForm.numText;
-          const numList = this.textareaArr(text);
 
-          editBatch({
-            checkOverDays: 'false',
+          doEditBatch({
             remainingDays: remainingDays,
-            numList: numList
+            numList: this.editRawList
           }).then(response => {
             if (response && response.code == '0') {
-              this.$modal.msgSuccess("批量录入成功");
+              this.$modal.msgSuccess("批量编辑成功");
               this.openOverBatch = false;
               this.openEditBatch = false;
+              this.editRawList = null;
+
+              this.overTipsForm.numText = this.parseTipsResponse(response.data);
+
+              this.openOverTips = true;
               this.getList();
             }
           });
@@ -763,6 +797,56 @@ export default {
     },
     joinArray(array) {
       return array.join('\n');
+    },
+    parseResponse(data) {
+      let numberText = '';
+      if (data.canRenewList.length > 0) {
+        let tempText = '';
+        data.canRenewList.forEach(item => {
+          tempText += item + ' 可续费\n';
+        })
+        numberText += tempText;
+      }
+      if (data.noOurList.length > 0) {
+        let tempText = '';
+        data.noOurList.forEach(item => {
+          tempText += item + ' 不是我们\n';
+        })
+        numberText += tempText;
+      }
+      if (data.noNeedList.length > 0) {
+        let tempText = '';
+        data.noNeedList.forEach(item => {
+          tempText += item.number + ' 无需续费，剩余' + item.days + '天\n';
+        })
+        numberText += tempText;
+      }
+      return numberText;
+    },
+    parseTipsResponse(data) {
+      let numberText = '';
+      if (data.renewSuccessList.length > 0) {
+        let tempText = '';
+        data.renewSuccessList.forEach(item => {
+          tempText += item + ' 续费成功\n';
+        })
+        numberText += tempText;
+      }
+      if (data.noOurList.length > 0) {
+        let tempText = '';
+        data.noOurList.forEach(item => {
+          tempText += item + ' 不是我们\n';
+        })
+        numberText += tempText;
+      }
+      if (data.noNeedList.length > 0) {
+        let tempText = '';
+        data.noNeedList.forEach(item => {
+          tempText += item.number + ' 无需续费，剩余' + item.days + '天\n';
+        })
+        numberText += tempText;
+      }
+      return numberText;
     },
     /** 删除按钮操作 */
     handleDelete(row) {

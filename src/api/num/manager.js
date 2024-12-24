@@ -81,3 +81,12 @@ export function editBatch(data){
     data: data
   })
 }
+
+// 执行批量编辑
+export function doEditBatch(data){
+  return request({
+    url: '/api/num/manager/doEditBatch',
+    method: 'post',
+    data: data
+  })
+}
