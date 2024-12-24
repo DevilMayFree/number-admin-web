@@ -846,6 +846,8 @@ export default {
         })
         numberText += tempText;
       }
+
+      numberText += '\n总计续费成功：'+data.renewSuccessList.length+'个\n';
       return numberText;
     },
     /** 删除按钮操作 */
