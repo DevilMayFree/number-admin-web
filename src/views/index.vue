@@ -23,6 +23,12 @@
             </el-card>
 
             <el-card style="padding-bottom:100px;">
+              <div class="grid-content content-card-top">
+                <span style="font-size: 5vw;">{{ parseTime(showData.expiryDate, '{y}-{m}-{d}') }}</span>
+              </div>
+              <div class="grid-content content-card-top">
+                <span style="font-size: 5vw;">{{ showData.remainingDays }}</span>
+              </div>
               <div class="grid-content content-card">
                 <span style="font-size: 20vw;">{{ showData.code }}</span>
               </div>
@@ -65,12 +71,17 @@ export default {
     getData() {
       this.showData = {
         code: null,
+        expiryDate: null,
+        remainingDays: null,
       }
       if (this.queryParams.keywords == null || this.queryParams.keywords === "") {
         return;
       }
       pageNumber(this.queryParams).then(response => {
-        this.showData = response.data.records[0];
+        if (response.data && response.data.records) {
+          this.showData = response.data.records[0];
+          console.log('showData', response.data.records[0]);
+        }
       });
     },
 
@@ -100,5 +111,14 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100vh;
+}
+
+.content-card-top {
+  border: black 3px solid;
+  /*min-height: 26rem;*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /*height: 50vh;*/
 }
 </style>

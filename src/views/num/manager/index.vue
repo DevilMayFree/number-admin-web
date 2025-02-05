@@ -46,6 +46,10 @@
           <el-button type="primary" plain icon="el-icon-edit" size="mini" @click="handleEditBatch">批量编辑
           </el-button>
         </el-form-item>
+        <el-form-item style="float:right;">
+          <el-button type="primary" plain icon="el-icon-edit" size="mini" @click="handleCardEditBatch">卡片批量编辑
+          </el-button>
+        </el-form-item>
       </el-form>
     </el-card>
 
@@ -219,6 +223,25 @@
         </div>
       </el-dialog>
 
+      <!-- 卡片批量编辑对话框 -->
+      <el-dialog title="卡片批量编辑" :visible.sync="openCardEditBatch" width="500px" append-to-body>
+        <el-form ref="editCardBatchForm" :model="editCardBatchForm" label-width="100px">
+          <el-form-item label="卡片续费天数" prop="remainingDays">
+            <el-input v-model.number="editCardBatchForm.remainingDays"
+                      placeholder="卡片续费天数"/>
+          </el-form-item>
+          <el-form-item label="号码列表" prop="numList">
+            <el-input class="num-list" v-model="editCardBatchForm.numText" type="textarea"
+                      placeholder="请输入号码列表,一行一个号码,回车换行"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitCardEditBatchForm" v-hasPermi="['num:manager:edit']">确 定
+          </el-button>
+          <el-button @click="editCardBatchCancel">取 消</el-button>
+        </div>
+      </el-dialog>
+
       <!-- 确定续费对话框 -->
       <el-dialog title="确定续费对话框" :visible.sync="openOverBatch" width="500px" append-to-body>
         <el-form ref="overBatchForm" :model="overBatchForm" label-width="100px">
@@ -240,9 +263,30 @@
         </div>
       </el-dialog>
 
+      <!-- 卡片确定续费对话框 -->
+      <el-dialog title="卡片确定续费对话框" :visible.sync="openCardOverBatch" width="500px" append-to-body>
+        <el-form ref="overCardBatchForm" :model="overCardBatchForm" label-width="100px">
+          <el-form-item label="卡片续费天数" prop="remainingDays">
+            <el-input disabled v-model.number="overCardBatchForm.remainingDays"
+                      placeholder="卡片续费天数"/>
+          </el-form-item>
+          <el-form-item label="号码列表" prop="numList">
+            <el-input disabled class="num-list" v-model="overCardBatchForm.numText" type="textarea"
+                      placeholder="待确认号码，一行一个号码"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitCardOverBatchForm" v-hasPermi="['num:manager:edit']">确定续费
+          </el-button>
+          <el-button v-clipboard:copy="overCardBatchForm.numText"
+                     v-clipboard:success="overCardBatchCancelCopy">取消(复制全部)
+          </el-button>
+        </div>
+      </el-dialog>
+
       <!--      结果复制框-->
       <el-dialog title="批量编辑结果" :visible.sync="openOverTips" width="500px" append-to-body>
-        <el-form ref="overBatchForm" :model="overTipsForm" label-width="100px">
+        <el-form ref="overTipsForm" :model="overTipsForm" label-width="100px">
           <el-form-item label="号码列表" prop="numList">
             <el-input class="num-list" v-model="overTipsForm.numText" type="textarea"
                       placeholder="一行一个号码"/>
@@ -255,6 +299,20 @@
         </div>
       </el-dialog>
 
+      <!--      卡片结果复制框-->
+      <el-dialog title="卡片批量编辑结果" :visible.sync="openCardOverTips" width="500px" append-to-body>
+        <el-form ref="overCardTipsForm" :model="overCardTipsForm" label-width="100px">
+          <el-form-item label="号码列表" prop="numList">
+            <el-input class="num-list" v-model="overCardTipsForm.numText" type="textarea"
+                      placeholder="一行一个号码"/>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button v-clipboard:copy="overCardTipsForm.numText"
+                     v-clipboard:success="overCardTipsCancelCopy">关闭(复制全部)
+          </el-button>
+        </div>
+      </el-dialog>
 
     </el-card>
   </div>
@@ -264,8 +322,8 @@
 import {
   addBatch,
   addNumber,
-  delNumber, doEditBatch,
-  editBatch,
+  delNumber, doCardEditBatch, doEditBatch,
+  editBatch, editCardBatch,
   getNumber,
   pageNumber,
   updateNumber,
@@ -302,8 +360,11 @@ export default {
       openRenew: false,
       openAddBatch: false,
       openEditBatch: false,
+      openCardEditBatch: false,
       openOverBatch: false,
+      openCardOverBatch: false,
       openOverTips: false,
+      openCardOverTips: false,
       // 查询参数
       queryParams: {
         // 分页参数
@@ -360,9 +421,13 @@ export default {
       renewForm: {},
       addBatchForm: {},
       editBatchForm: {},
+      editCardBatchForm: {},
       editRawList: null,
+      editCardRawList: null,
       overBatchForm: {},
+      overCardBatchForm: {},
       overTipsForm: {},
+      overCardTipsForm: {},
       teamRules: {
         label: [{
           required: false,
@@ -505,17 +570,32 @@ export default {
 
       this.getList();
     },
+    editCardBatchCancel() {
+      this.openCardEditBatch = false;
+      this.resetCardEditBatch();
+
+      this.getList();
+    },
     overBatchCancel() {
       this.openOverBatch = false;
       this.resetOverBatch();
 
       this.editBatchCancel();
     },
+    overCardBatchCancel() {
+      this.openCardOverBatch = false;
+      this.resetCardOverBatch();
+      this.editCardBatchCancel();
+    },
     overTipsCancel() {
       this.openOverTips = false;
       this.resetTipsBatch();
-
       this.overBatchCancel();
+    },
+    overCardTipsCancel() {
+      this.openCardOverTips = false;
+      this.resetCardTipsBatch();
+      this.overCardBatchCancel();
     },
     // 表单重置
     reset() {
@@ -560,6 +640,14 @@ export default {
       };
       this.resetForm("editBatchForm");
     },
+    resetCardEditBatch() {
+      this.editCardBatchForm = {
+        checkOverDays: 'true',
+        remainingDays: null,
+        numText: null
+      };
+      this.resetForm("editCardBatchForm");
+    },
     resetOverBatch() {
       this.overBatchForm = {
         remainingDays: null,
@@ -567,11 +655,24 @@ export default {
       };
       this.resetForm("overBatchForm");
     },
+    resetCardOverBatch() {
+      this.overCardBatchForm = {
+        remainingDays: null,
+        numText: null
+      };
+      this.resetForm("overCardBatchForm");
+    },
     resetTipsBatch() {
       this.overTipsForm = {
         numText: null
       };
       this.resetForm("overTipsForm");
+    },
+    resetCardTipsBatch() {
+      this.overCardTipsForm = {
+        numText: null
+      };
+      this.resetForm("overCardTipsForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -596,9 +697,17 @@ export default {
       this.$modal.msgSuccess("复制成功");
       this.overBatchCancel();
     },
+    overCardBatchCancelCopy() {
+      this.$modal.msgSuccess("复制成功");
+      this.overCardBatchCancel();
+    },
     overTipsCancelCopy() {
       this.$modal.msgSuccess("复制成功");
       this.overTipsCancel();
+    },
+    overCardTipsCancelCopy() {
+      this.$modal.msgSuccess("复制成功");
+      this.overCardTipsCancel();
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -627,6 +736,10 @@ export default {
     handleEditBatch() {
       this.resetEditBatch();
       this.openEditBatch = true;
+    },
+    handleCardEditBatch(){
+      this.resetCardEditBatch();
+      this.openCardEditBatch = true;
     },
     handleRenew() {
       if (this.ids != null && this.ids.length > 0) {
@@ -764,6 +877,33 @@ export default {
         }
       })
     },
+    submitCardEditBatchForm() {
+      this.$refs["editCardBatchForm"].validate(valid => {
+        if (valid) {
+          const remainingDays = this.editCardBatchForm.remainingDays;
+          const text = this.editCardBatchForm.numText;
+          const numList = this.textareaArr(text);
+          this.editCardRawList = numList;
+
+          editCardBatch({
+            remainingDays: remainingDays,
+            numList: numList
+          }).then(response => {
+            if (response && response.code == '0') {
+              console.log('editCardBatch response:', response)
+              const data = response.data;
+              if (data.editStatus == 5) {
+                this.resetCardOverBatch();
+                this.overCardBatchForm.remainingDays = remainingDays;
+                this.overCardBatchForm.numText = this.parseResponse(data);
+
+                this.openCardOverBatch = true;
+              }
+            }
+          });
+        }
+      })
+    },
     submitOverBatchForm() {
       this.$refs["overBatchForm"].validate(valid => {
         if (valid) {
@@ -782,6 +922,30 @@ export default {
               this.overTipsForm.numText = this.parseTipsResponse(response.data);
 
               this.openOverTips = true;
+              this.getList();
+            }
+          });
+        }
+      })
+    },
+    submitCardOverBatchForm() {
+      this.$refs["overCardBatchForm"].validate(valid => {
+        if (valid) {
+          const remainingDays = this.overCardBatchForm.remainingDays;
+
+          doCardEditBatch({
+            remainingDays: remainingDays,
+            numList: this.editCardRawList
+          }).then(response => {
+            if (response && response.code == '0') {
+              this.$modal.msgSuccess("批量编辑成功");
+              this.openCardOverBatch = false;
+              this.openCardEditBatch = false;
+              this.editCardRawList = null;
+
+              this.overCardTipsForm.numText = this.parseTipsResponse(response.data);
+
+              this.openCardOverTips = true;
               this.getList();
             }
           });

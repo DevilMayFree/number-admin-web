@@ -82,10 +82,28 @@ export function editBatch(data){
   })
 }
 
+// 卡片批量编辑
+export function editCardBatch(data){
+  return request({
+    url: '/api/num/manager/editCardBatch',
+    method: 'post',
+    data: data
+  })
+}
+
 // 执行批量编辑
 export function doEditBatch(data){
   return request({
     url: '/api/num/manager/doEditBatch',
+    method: 'post',
+    data: data
+  })
+}
+
+// 执行卡片批量编辑
+export function doCardEditBatch(data){
+  return request({
+    url: '/api/num/manager/doEditCardBatch',
     method: 'post',
     data: data
   })
